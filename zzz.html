@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0061)https://prosk83.github.io/myweb2/Web_click_Demo_21.03.26.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko" class="translated-ltr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>BrainJar.com : 캘린더 데모</title>
+
+<link href="file:///C:/common/default.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+
+/* Stylings for the calendar display. */
+
+#calendar {
+  border-collapse: collapse;
+  border-spacing: 1px;
+  margin: 0px;
+  padding: 0px;
+}
+
+#calendar tr.header th {
+  background-color: #008080;
+  color: #ffffff;
+  text-align: center;
+}
+
+#calendar tr.days th {
+  background-color: #80c0c0;
+  width: 2.2em;
+  text-align: center;
+}
+
+#calendar tr.footer td {
+  border: none;
+  padding: 6px 0px 4px 0px;
+}
+
+#calendar td, #calendar th {
+  border: 1px solid #000000;
+  color: #000000;
+  empty-cells: show;
+  padding: 2px .25em 2px .25em;
+}
+
+#calendar td {
+  text-align: right;
+}
+
+#calendar td.weekend {
+  background-color: #e0f0f0;
+}
+
+#calendar td.target {
+  background-color: #ffffe0;
+  font-weight: bold;
+}
+
+#calendar a, #calendar a:visited {
+  color: #008080;
+  text-decoration: none;
+}
+
+#calendar a:hover {
+  color: #0000ff;
+  text-decoration: none;
+}
+
+#calendar a.button {
+  background-color: #80c0c0;
+  border: 2px solid;
+  border-color: #a0e0e0 #509090 #509090 #a0e0e0;
+  color: #000000;
+  font-size: 80%;
+  font-weight: bold;
+  padding: 2px .5em 2px .5em;
+  text-decoration: none;
+}
+
+#calendar a.button:visited, #calendar a.button:hover {
+  color: #000000;
+  text-decoration: none;
+}
+
+</style>
+<script type="text/javascript">//<![CDATA[
+
+//*****************************************************************************
+// Do not remove this notice.
+//
+// Copyright 2001 by Mike Hall.
+// See http://www.brainjar.com for terms of use.
+//*****************************************************************************
+
+//============================================================================
+// This code handles the calendar display and interaction.
+//============================================================================
+
+// Default target date to today.
+
+var targetDate = new Date();
+
+// Initialize the calendar display once the page loads.
+
+window.onload = setCalendar;
+
+//----------------------------------------------------------------------------
+// This function updates the calendar display to reflect the current target
+// date.
+//----------------------------------------------------------------------------
+
+function setCalendar(event) {
+
+  var el, tableEl, rowEl, cellEl, linkEl;
+  var tmpDate, tmpDate2;
+  var i, j;
+
+  // Update month name.
+
+  el = document.getElementById("calendarHeader").firstChild;
+  el.nodeValue = targetDate.getMonthName() + "\u00a0" + targetDate.getFullYear();
+
+  // Start with the first day of the month and go back if necessary to
+  // the previous Sunday.
+
+  tmpDate = new Date(Date.parse(targetDate));
+  tmpDate.setDate(1);
+  while (tmpDate.getDay() != 0) {
+    tmpDate.addDays(-1);
+  }
+
+  // Go through each calendar day cell in the table and update it.
+
+  tableEl = document.getElementById("calendar");
+  for (i = 2; i <= 7; i++) {
+    rowEl = tableEl.rows[i];
+
+    // Hide row if it contains no dates in the current month.
+
+    tmpDate2 = new Date(Date.parse(tmpDate));
+    tmpDate2.addDays(6);
+    if (tmpDate.getMonth()  != targetDate.getMonth() &&
+        tmpDate2.getMonth() != targetDate.getMonth()) {
+      rowEl.style.visibility = "hidden";
+      if (document.all)
+        for (j = 0; j < rowEl.cells.length; j++)
+          rowEl.cells[j].style.borderStyle = "none";
+    }
+    else {
+      rowEl.style.visibility = "";
+      if (document.all)
+        for (j = 0; j < rowEl.cells.length; j++)
+          rowEl.cells[j].style.borderStyle = "";
+    }
+
+    // Loop through a week.
+
+    for (j = 0; j < rowEl.cells.length; j++) {
+      cellEl = rowEl.cells[j];
+      linkEl = cellEl.firstChild;
+
+      if (tmpDate.getMonth() == targetDate.getMonth()) {
+        linkEl.date = new Date(Date.parse(tmpDate));
+        s = tmpDate.toString().split(" ");
+        linkEl.title = s[0] + " " + s[1] + " " + s[2] + ", " + s[s.length - 1];
+        linkEl.firstChild.nodeValue = tmpDate.getDate();
+        linkEl.style.visibility = "";
+      }
+      else
+        linkEl.style.visibility = "hidden";
+
+      // Highlight the current date.
+
+      if (cellEl.oldClass == null)
+        cellEl.oldClass = cellEl.className;
+      if (Date.parse(tmpDate) == Date.parse(targetDate))
+        cellEl.className = cellEl.oldClass + " target";
+      else
+        cellEl.className = cellEl.oldClass;
+
+      // Go to the next day.
+
+      tmpDate.addDays(1);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+// Event handlers for the calendar elements.
+//----------------------------------------------------------------------------
+
+function addMonths(event, n) {
+
+  // Advance the calendar month and update the display.
+
+  targetDate.addMonths(n);
+  setCalendar(event);
+}
+
+function addYears(event, n) {
+
+  // Advance the calendar year and update the display.
+
+  targetDate.addYears(n);
+  setCalendar(event);
+}
+
+function setTargetDate(event, link) {
+
+  // Change the target date and update the calendar.
+
+  if (link.date != null) {
+    targetDate = new Date(Date.parse(link.date));
+    setCalendar(event);
+  }
+}
+
+function displayDate(event) {
+
+  // Display the current target date as a formatted string.
+
+  alert(formatDate(targetDate));
+}
+
+function formatDate() {
+
+  var mm, dd, yyyy;
+
+  // Return the target date in "mm/dd/yyyy" format.
+
+  mm = String(targetDate.getMonth() + 1);
+  while (mm.length < 2)
+    mm = "0" + mm;
+  dd = String(targetDate.getDate());
+  while (dd.length < 2)
+    dd = "0" + dd;
+  yyyy = String(targetDate.getFullYear());
+  while (yyyy.length < 4)
+    yyyy = "0" + yyyy;
+
+  return mm + "/" + dd + "/" + yyyy;
+}
+
+//============================================================================
+// Add new properties and methods to the Date object.
+//============================================================================
+
+// Properties
+
+Date.prototype.monthNames = new Array("January", "February", "March", "April",
+  "May", "June", "July", "August", "September", "October", "November",
+  "December");
+Date.prototype.savedDate  = null;
+
+// Methods
+
+Date.prototype.getMonthName = dateGetMonthName;
+Date.prototype.getDays      = dateGetDays;
+Date.prototype.addDays      = dateAddDays;
+Date.prototype.addMonths    = dateAddMonths;
+Date.prototype.addYears     = dateAddYears;
+
+//----------------------------------------------------------------------------
+// getMonthName(): Returns the name of the date's month.
+//----------------------------------------------------------------------------
+
+function dateGetMonthName() {
+
+  return this.monthNames[this.getMonth()];
+}
+
+//----------------------------------------------------------------------------
+// getDays(): Returns the number of days in the date's month.
+//----------------------------------------------------------------------------
+
+function dateGetDays() {
+
+  var tmpDate, d, m;
+
+  tmpDate = new Date(Date.parse(this));
+  m = tmpDate.getMonth();
+  d = 28;
+  do {
+    d++;
+    tmpDate.setDate(d);
+  } while (tmpDate.getMonth() == m);
+
+  return d - 1;
+}
+
+//----------------------------------------------------------------------------
+// addDays(n): Adds the specified number of days to the date.
+//----------------------------------------------------------------------------
+
+function dateAddDays(n) {
+
+  // Add the specified number of days.
+
+  this.setDate(this.getDate() + n);
+
+  // Reset the new day of month.
+
+  this.savedDate = this.getDate();
+}
+
+//----------------------------------------------------------------------------
+// addMonths(n): Adds the specified number of months to the date, adjusting
+// the day of the month if necessary.
+//----------------------------------------------------------------------------
+
+function dateAddMonths(n) {
+
+  // Save the day of month if not already set.
+
+  if (this.savedDate == null)
+    this.savedDate = this.getDate();
+
+  // Set the day of month to the first to avoid rolling.
+
+  this.setDate(1);
+
+  // Add the specified number of months.
+
+  this.setMonth(this.getMonth() + n);
+
+  // Restore the saved day of month, if possible.
+
+  this.setDate(Math.min(this.savedDate, this.getDays()));
+}
+
+//----------------------------------------------------------------------------
+// addYears(n): Adds the specified number of years to the date, adjusting the
+// day of the month for leap years.
+//----------------------------------------------------------------------------
+
+function dateAddYears(n) {
+
+  // Save the day of month if not already set.
+
+  if (this.savedDate == null)
+    this.savedDate = this.getDate();
+
+  // Set the day of month to the first to avoid rolling.
+
+  this.setDate(1);
+
+  // Add the specified number of years.
+
+  this.setFullYear(this.getFullYear() + n);
+
+  // Restore the saved day of month, if possible.
+
+  this.setDate(Math.min(this.savedDate, this.getDays()));
+}
+
+//]]></script>
+<meta name="generator" content="Namo WebEditor v5.0(Trial)">
+<link type="text/css" rel="stylesheet" charset="UTF-8" href="./zzz_files/translateelement.css"></head>
+<body>
+
+<p align="center">&nbsp;</p>
+<table id="calendar" align="center">
+<tbody><tr class="header">
+  <th id="calendarHeader" colspan="7"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2021 년 6 월</font></font></th>
+</tr>
+<tr class="days">
+  <th><a href="https://blog.naver.com/ddangen83/222281050357" target="_blank"><img src="./zzz_files/install_google_white.png" width="145"></a></th>
+  <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">월</font></font></th>
+  <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">화</font></font></th>
+  <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">수요일</font></font></th>
+  <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">목</font></font></th>
+  <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">금</font></font></th>
+  <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">수능</font></font></th>
+</tr>
+<tr>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Mon Mar 01, 표준시)" style="visibility: hidden;"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Tue Jun 01, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Wed Jun 02, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Thu Jun 03, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">삼</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Fri Jun 04, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">4</font></font></a></td>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sat Jun 05, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">5</font></font></a></td>
+</tr>
+<tr>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sun Jun 06, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">6</font></font></a></td>
+  <td class=" target"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Mon Jun 07, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">7</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Tue Jun 08, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">8</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Wed Jun 09, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">9</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 10 일 목요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">10</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 11 일 금요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">11</font></font></a></td>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sat Jun 12, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">12</font></font></a></td>
+</tr>
+<tr>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sun Jun 13, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">13</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Mon Jun 14, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">14</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 15 일 화요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">15</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Wed Jun 16, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">16</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 17 일 목요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">17</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 18 일 금요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">18</font></font></a></td>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sat Jun 19, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">19</font></font></a></td>
+</tr>
+<tr>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sun Jun 20, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">20</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Mon Jun 21, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">21</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Tue Jun 22, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">22</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Wed Jun 23, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">23</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 24 일 목요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">24</font></font></a></td>
+  <td class=" target"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="표준시 6 월 25 일 금요일)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">25</font></font></a></td>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sat Jun 26, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">26</font></font></a></td>
+</tr>
+<tr>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Sun Jun 27, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">27</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Mon Jun 28, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">28</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Tue Jun 29, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">29</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" title="Wed Jun 30, 표준시)"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">30</font></font></a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+</tr>
+<tr style="visibility: hidden;">
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class=""><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+  <td class="weekend"><a href="file:///C:/Users/user/Downloads/sample_html/calendar.html" onclick="setTargetDate(event, this); return false;" style="visibility: hidden;">&nbsp;</a></td>
+</tr>
+<tr class="footer">
+  <td colspan="2" style="text-align:left;">
+    <a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="작년." onclick="addYears(event, -1); return false;"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">&lt;&lt; </font></font></a>
+    <a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="지난달." onclick="addMonths(event, -1); return false;"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">&lt;</font></font></a>
+  </td>
+  <td colspan="3" style="text-align:center;">
+    <a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="강조 표시된 날짜를 사용하십시오." onclick="displayDate(event); return false;"><font style="vertical-align: inherit;"></font></a>
+    <font style="vertical-align: inherit;"><a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="Reset calendar to current date." onclick="targetDate = new Date(); setCalendar(event); return false;"><font style="vertical-align: inherit;">재설정 </font></a><a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="Use the highlighted date." onclick="displayDate(event); return false;"><font style="vertical-align: inherit;">선택</font></a></font><a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="달력을 현재 날짜로 재설정합니다." onclick="targetDate = new Date(); setCalendar(event); return false;"><font style="vertical-align: inherit;"></font></a>
+  </td>
+  <td colspan="2" style="text-align:right;">
+    <a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="다음 달." onclick="addMonths(event, 1); return false;"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">&gt; </font></font></a>
+    <a class="button" href="file:///C:/Users/user/Downloads/sample_html/calendar.html" title="내년." onclick="addYears(event, 1); return false;"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">&gt;&gt;</font></font></a>
+  </td>
+</tr>
+</tbody></table><div id="goog-gt-tt" class="skiptranslate" dir="ltr"><div style="padding: 8px;"><div><div class="logo"><img src="./zzz_files/translate_24dp.png" width="20" height="20" alt="Google 번역"></div></div></div><div class="top" style="padding: 8px; float: left; width: 100%;"><h1 class="title gray">원본 텍스트</h1></div><div class="middle" style="padding: 8px;"><div class="original-text"></div></div><div class="bottom" style="padding: 8px;"><div class="activity-links"><span class="activity-link">번역 제안하기</span><span class="activity-link"></span></div><div class="started-activity-container"><hr style="color: #CCC; background-color: #CCC; height: 1px; border: none;"><div class="activity-root"></div></div></div><div class="status-message" style="display: none;"></div></div>
+
+
+<div class="goog-te-spinner-pos"><div class="goog-te-spinner-animation"><svg xmlns="http://www.w3.org/2000/svg" class="goog-te-spinner" width="96px" height="96px" viewBox="0 0 66 66"><circle class="goog-te-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle></svg></div></div></body></html>
